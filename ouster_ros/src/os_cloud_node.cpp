@@ -40,8 +40,6 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "os_cloud_node");
     ros::NodeHandle nh("~");
 
-    Diagnostics diagnostics(10, "ouster", "ouster");
-
     auto tf_prefix = nh.param("tf_prefix", std::string{});
     if (!tf_prefix.empty() && tf_prefix.back() != '/') tf_prefix.append("/");
     auto sensor_frame = tf_prefix + "os_sensor";
@@ -61,6 +59,9 @@ int main(int argc, char** argv) {
     uint32_t W = info.format.columns_per_frame;
 
     auto pf = sensor::get_format(info);
+
+    int frequency = (info.mode == ouster::sensor::MODE_512x20 || info.mode == ouster::sensor::MODE_1024x20) ? 20 : 10;
+    Diagnostics diagnostics(frequency, "ouster", "ouster");
 
     auto lidar_pub = nh.advertise<sensor_msgs::PointCloud2>("points", 10);
     auto imu_pub = nh.advertise<sensor_msgs::Imu>("imu", 100);
